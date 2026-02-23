@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des Médicaments (Vue.js)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        .form-ajout {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 150px;
+            font-weight: bold;
+        }
+        input, select {
+            padding: 5px;
+            width: 300px;
+        }
+        button.delete {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        button.delete:hover {
+            background-color: #bd2130;
+        }
+        button.add {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+        button.add:hover {
+            background-color: #218838;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 3px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="index.html" class="back-link">← Retour à l'accueil</a>
+    <h1>💊 Gestion des Médicaments</h1>
+
+    <div id="app">
+        <!-- Message de notification -->
+        <div v-if="message" :class="['flash-message', messageType]">
+            {{ message }}
+        </div>
+
+        <!-- Formulaire d'ajout -->
+        <div class="form-ajout">
+            <h3>Ajouter un nouveau médicament</h3>
+            <form @submit.prevent="ajouterMedicament">
+                <div class="form-group">
+                    <label>Nom :</label>
+                    <input type="text" v-model="nouveauMedicament.nom" required placeholder="Ex: Doliprane 1000">
+                </div>
+                <div class="form-group">
+                    <label>Prix (€) :</label>
+                    <input type="number" v-model="nouveauMedicament.prixUnitaire" step="0.01" required placeholder="Ex: 5.50">
+                </div>
+                <!-- Sélection de la catégorie (Bonus: on les charge via l'API) -->
+                <div class="form-group">
+                    <label>Catégorie :</label>
+                    <select v-model="selectedCategorieUrl" required>
+                        <option value="" disabled>-- Choisir une catégorie --</option>
+                        <option v-for="cat in categories" :value="cat._links.self.href">
+                            {{ cat.libelle }}
+                        </option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="add">➕ Ajouter</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Liste des médicaments -->
+        <h3>Liste des médicaments existants ({{ medicaments.length }})</h3>
+        <table>
+            <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Catégorie</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="med in medicaments" :key="med._links.self.href">
+                <td>{{ med.nom }}</td>
+                <!-- Note: Pour afficher le nom de la catégorie, il faudrait une requête supplémentaire, 
+                     ici on simplifie en n'affichant que les infos directes -->
+                <td>-</td> 
+                <td>{{ med.prixUnitaire }} €</td>
+                <td>{{ med.unitesEnStock }}</td>
+                <td>
+                    <img v-if="med.imageURL" :src="med.imageURL" style="height: 30px;">
+                    <span v-else>🚫</span>
+                </td>
+                <td>
+                    <button class="delete" @click="supprimerMedicament(med._links.self.href)">🗑️ Supprimer</button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const App = {
+        data() {
+            return {
+                medicaments: [],
+                categories: [],
+                nouveauMedicament: {
+                    nom: '',
+                    prixUnitaire: '',
+                    unitesEnStock: 0
+                },
+                selectedCategorieUrl: '',
+                message: '',
+                messageType: ''
+            }
+        },
+        mounted() {
+            this.chargerMedicaments();
+            this.chargerCategories();
+        },
+        methods: {
+            // Charger tous les médicaments
+            chargerMedicaments() {
+                fetch('api/medicaments?size=100') // On en récupère 100 pour l'exemple
+                    .then(response => response.json())
+                    .then(data => {
+                        this.medicaments = data._embedded.medicaments;
+                        // Trier par nom pour faire joli
+                        this.medicaments.sort((a, b) => a.nom.localeCompare(b.nom));
+                    })
+                    .catch(error => console.error("Erreur chargement médicaments", error));
+            },
+
+            // Charger les catégories pour le menu déroulant
+            chargerCategories() {
+                fetch('api/categories')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.categories = data._embedded.categories;
+                    })
+                    .catch(error => console.error("Erreur chargement catégories", error));
+            },
+
+            // Ajouter un médicament
+            ajouterMedicament() {
+                // 1. Préparer l'objet JSON à envoyer
+                // Attention: Spring Data REST attend l'URI de la catégorie, pas juste l'ID
+                const dataToSend = {
+                    nom: this.nouveauMedicament.nom,
+                    prixUnitaire: this.nouveauMedicament.prixUnitaire,
+                    unitesEnStock: 0, // Stock initial à 0 pour simplifier
+                    categorie: this.selectedCategorieUrl
+                };
+
+                fetch('api/medicaments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dataToSend)
+                })
+                .then(response => {
+                    if (response.ok) {
+                        this.afficherMessage("Médicament ajouté avec succès !", "success");
+                        this.nouveauMedicament.nom = "";
+                        this.nouveauMedicament.prixUnitaire = "";
+                        this.selectedCategorieUrl = "";
+                        this.chargerMedicaments(); // Recharger la liste
+                    } else {
+                        this.afficherMessage("Erreur lors de l'ajout", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur ajout", error);
+                    this.afficherMessage("Erreur réseau", "error");
+                });
+            },
+
+            // Supprimer un médicament
+            supprimerMedicament(url) {
+                if (!confirm("Voulez-vous vraiment supprimer ce médicament ?")) return;
+
+                fetch(url, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        this.afficherMessage("Médicament supprimé !", "success");
+                        this.chargerMedicaments();
+                    } else {
+                        this.afficherMessage("Impossible de supprimer (peut-être lié à une commande ?)", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur suppression", error);
+                });
+            },
+
+            afficherMessage(msg, type) {
+                this.message = msg;
+                this.messageType = type;
+                setTimeout(() => this.message = '', 3000);
+            }
+        }
+    };
+
+    Vue.createApp(App).mount('#app');
+</script>
+</body>
+</html>
