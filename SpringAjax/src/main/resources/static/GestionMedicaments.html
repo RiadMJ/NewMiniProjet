@@ -67,7 +67,7 @@
 <body>
 <div class="container">
     <a href="index.html" class="back-link">← Retour à l'accueil</a>
-    <h1>💊 Gestion des Médicaments</h1>
+    <h1>Gestion des Médicaments</h1>
 
     <div id="app">
         <!-- Message de notification -->
@@ -98,7 +98,7 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <button type="submit" class="add">➕ Ajouter</button>
+                    <button type="submit" class="add">Ajouter</button>
                 </div>
             </form>
         </div>
@@ -126,10 +126,10 @@
                 <td>{{ med.unitesEnStock }}</td>
                 <td>
                     <img v-if="med.imageURL" :src="med.imageURL" style="height: 30px;">
-                    <span v-else>🚫</span>
+                    <span v-else>-</span>
                 </td>
                 <td>
-                    <button class="delete" @click="supprimerMedicament(med._links.self.href)">🗑️ Supprimer</button>
+                    <button class="delete" @click="supprimerMedicament(med._links.self.href)">Supprimer</button>
                 </td>
             </tr>
             </tbody>
