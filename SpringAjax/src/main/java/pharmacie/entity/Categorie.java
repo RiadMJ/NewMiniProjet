@@ -11,28 +11,38 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
-@Getter @Setter @NoArgsConstructor @RequiredArgsConstructor @ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@RequiredArgsConstructor
+@ToString
 public class Categorie {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Setter(AccessLevel.NONE) // la clé est auto-générée par la BD, On ne veut pas de "setter"
-	private Integer code;
 
-	@NonNull
-	@Size(min = 1, max = 255)
-	@Column(unique=true, length = 255)
-	@NotBlank // pour éviter les libellés vides
-	private String libelle;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.NONE) // la clé est auto-générée par la BD, On ne veut pas de "setter"
+    private Integer code;
 
-	@Size(max = 255)
-	@Column(length = 255)
-	private String description;
+    @NonNull
+    @Size(min = 1, max = 255)
+    @Column(unique = true, length = 255)
+    @NotBlank // pour éviter les libellés vides
+    private String libelle;
 
-	@ToString.Exclude
-	// CascadeType.ALL signifie que toutes les opérations CRUD sur la catégorie sont également appliquées à ses médicaments
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "categorie")
-	// pour éviter la boucle infinie si on convertit la catégorie en JSON
-	@JsonIgnoreProperties({"categorie", "lignes"})
-	private List<Medicament> medicaments = new LinkedList<>();
+    @Size(max = 255)
+    @Column(length = 255)
+    private String description;
+
+    @ToString.Exclude
+    // CascadeType.ALL signifie que toutes les opérations CRUD sur la catégorie sont également appliquées à ses médicaments
+    @OneToMany(cascade = {CascadeType.ALL}, mappedBy = "categorie")
+    // pour éviter la boucle infinie si on convertit la catégorie en JSON
+    @JsonIgnoreProperties({"categorie", "lignes"})
+    private List<Medicament> medicaments = new LinkedList<>();
+
+    @ManyToMany(mappedBy = "categories")
+    @JsonIgnoreProperties("categories")
+    @ToString.Exclude
+    private List<Fournisseur> fournisseurs = new LinkedList<>();
 
 }

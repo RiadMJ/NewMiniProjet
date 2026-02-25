@@ -181,3 +181,31 @@ INSERT INTO LIGNE (COMMANDE_NUMERO, MEDICAMENT_REFERENCE, QUANTITE) VALUES
 (6, 6, 110), (6, 16, 65), (6, 26, 85), (6, 36, 60), (6, 91, 70),
 (7, 7, 80), (7, 17, 50), (7, 27, 95), (7, 37, 55), (7, 100, 45),
 (8, 8, 100), (8, 18, 75), (8, 28, 80), (8, 38, 70), (8, 48, 60);
+
+-- Initialisation des fournisseurs
+INSERT INTO FOURNISSEUR (NOM, EMAIL) VALUES
+('Pfizer Distribution', 'supplier+pfizer@gmail.com'),
+('Sanofi Logistics', 'supplier+sanofi@gmail.com'),
+('Bayer Supply Chain', 'supplier+bayer@gmail.com');
+
+-- Lier les fournisseurs aux catégories (chaque catégorie est fournie par au moins 2 fournisseurs)
+-- Categorie 1 (Antalgiques) -> F1, F2
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 1), (2, 1);
+-- Categorie 2 (Anti-inflammatoires) -> F1, F3
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 2), (3, 2);
+-- Categorie 3 (Antibiotiques) -> F2, F3
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (2, 3), (3, 3);
+-- Categorie 4 (Antihypertenseurs) -> F1, F2
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 4), (2, 4);
+-- Categorie 5 (Antidiabétiques) -> F2, F3
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (2, 5), (3, 5);
+-- Categorie 6 (Antihistaminiques) -> F1, F3
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 6), (3, 6);
+-- Categorie 7 (Vitamines) -> F1, F2
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 7), (2, 7);
+-- Categorie 8 (Cardio) -> F2, F3
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (2, 8), (3, 8);
+-- Categorie 9 (Gastro) -> F1, F3
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 9), (3, 9);
+-- Categorie 10 (Respiratoire) -> F1, F2
+INSERT INTO FOURNISSEUR_CATEGORIE (FOURNISSEUR_ID, CATEGORIE_CODE) VALUES (1, 10), (2, 10);
