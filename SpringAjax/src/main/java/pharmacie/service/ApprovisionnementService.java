@@ -28,14 +28,16 @@ public class ApprovisionnementService {
     }
 
     @Transactional(readOnly = true)
-    public void traiterReapprovisionnement() {
+    public List<String> traiterReapprovisionnement() {
+        List<String> logs = new ArrayList<>();
         // 1. Identifier les médicaments à réapprovisionner
         List<Medicament> medicamentsACommander = medicamentRepository.findAll().stream()
                 .filter(m -> m.getUnitesEnStock() < m.getNiveauDeReappro())
                 .collect(Collectors.toList());
 
         if (medicamentsACommander.isEmpty()) {
-            return;
+            logs.add("✅ Aucun médicament à réapprovisionner (tous les stocks sont suffisants).");
+            return logs;
         }
 
         // Structure : Fournisseur -> (Categorie -> Liste de Médicaments)
@@ -60,7 +62,10 @@ public class ApprovisionnementService {
             Fournisseur fournisseur = entry.getKey();
             Map<Categorie, List<Medicament>> medicamentsParCategorie = entry.getValue();
             envoyerEmailApprovisionnement(fournisseur, medicamentsParCategorie);
+            logs.add("📧 Email envoyé à " + fournisseur.getNom() + " (" + fournisseur.getEmail() + ") pour " + medicamentsParCategorie.size() + " catégories.");
         }
+
+        return logs;
     }
 
     private void envoyerEmailApprovisionnement(Fournisseur fournisseur, Map<Categorie, List<Medicament>> medicamentsParCategorie) {

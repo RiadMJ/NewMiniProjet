@@ -1,9 +1,12 @@
 package pharmacie.rest;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 import pharmacie.service.ApprovisionnementService;
 
 @RestController
@@ -17,8 +20,7 @@ public class ApprovisionnementController {
     }
 
     @PostMapping("/lancer")
-    public ResponseEntity<String> lancerApprovisionnement() {
-        approvisionnementService.traiterReapprovisionnement();
-        return ResponseEntity.ok("Processus de réapprovisionnement lancé. Les emails ont été envoyés aux fournisseurs.");
+    public ResponseEntity<List<String>> lancerApprovisionnement() {
+        return ResponseEntity.ok(approvisionnementService.traiterReapprovisionnement());
     }
 }
